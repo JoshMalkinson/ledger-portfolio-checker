@@ -1,0 +1,36 @@
+syntax = "proto3";
+package portfolio.v1;
+option go_package = "portfolio-checker/gen/portfolio/v1;portfoliov1";
+
+service PortfolioService {
+  rpc CheckPortfolio(CheckPortfolioRequest) returns (CheckPortfolioResponse);
+}
+message CheckPortfolioRequest {
+  bytes csv_data = 1;
+  uint32 limit_basis_points = 2;
+}
+message CheckPortfolioResponse {
+  oneof result {
+    ValidationFailure validation_failure = 1;
+    PortfolioAnalysis analysis = 2;
+  }
+}
+message ValidationFailure { repeated ValidationIssue issues = 1; }
+message ValidationIssue {
+  uint32 row = 1;
+  string field = 2;
+  string code = 3;
+  string message = 4;
+}
+message PortfolioAnalysis {
+  int64 total_minor = 1;
+  repeated Holding holdings = 2;
+}
+message Holding {
+  string instrument_id = 1;
+  string instrument_name = 2;
+  string currency = 3;
+  int64 market_value_minor = 4;
+  uint32 allocation_basis_points = 5;
+  bool breached = 6;
+}
