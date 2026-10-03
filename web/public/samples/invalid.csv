@@ -1,0 +1,3 @@
+instrument_id,instrument_name,currency,market_value
+A,Alpha,ZAR,60.00
+ a ,Duplicate Alpha,ZAR,-40.00
