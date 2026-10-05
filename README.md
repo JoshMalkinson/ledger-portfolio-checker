@@ -177,4 +177,3 @@ This version has no authentication, persistence, real feeds, FX conversion, reba
 GCP deployment is **not performed**. Docker and gcloud were not available on the development PATH. See [the deployment notes](docs/deployment.md) for the remaining work. No cloud resources or paid services have been created.
 
 Read [the interview guide](docs/interview-guide.md) to connect the design to Angular, React, C# and Java experience. This is an AI-assisted portfolio project; describe your contribution and understanding accurately.
-
