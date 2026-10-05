@@ -4,6 +4,17 @@ A focused portfolio-operations demo built with **Go, Vue 3, TypeScript, Protobuf
 
 The project demonstrates the data quality and typed service boundaries behind an investment operations workflow. It implements an **example concentration rule**, not a regulatory compliance assessment. No trading or investment recommendations are made.
 
+## Get the source
+
+Public repository: https://github.com/JoshMalkinson/ledger-portfolio-checker
+
+```shell
+git clone https://github.com/JoshMalkinson/ledger-portfolio-checker.git
+cd ledger-portfolio-checker
+```
+
+Open the cloned folder, then follow the steps below.
+
 ## Run on Windows
 
 Prerequisites: Windows x64, PowerShell, Node 22.12+ (Node 24 LTS recommended), and npm. Internet access is needed for the first setup. No database, Docker or cloud account is needed.
@@ -50,17 +61,74 @@ B,Beta,ZAR,40.00
 - Concentration limits range from `0.01` to `100`, with up to two fractional digits; default `20`.
 - Error rows refer to physical CSV lines, with 0 reserved for a whole-file issue.
 
-## Architecture
+## System flowchart
+
+The browser collects the inputs; Go validates the complete file before calculating any portfolio results. Invalid data returns actionable errors instead of a partial analysis.
+
+```mermaid
+flowchart TD
+  User([User selects a holdings CSV and concentration limit])
+
+  subgraph Browser["Browser - Vue and TypeScript"]
+    Inputs["Check file selection, file size and limit format"]
+    InputOK{"Inputs ready?"}
+    InputError["Show an input error"]
+    Client["Generated client sends CSV bytes and limit in basis points"]
+    Current{"Response still matches current inputs?"}
+    Ignore["Ignore obsolete response"]
+    Outcome{"Response type?"}
+    Errors["Show validation issues - no portfolio results"]
+    Dashboard["Show total value, allocations and breach flags"]
+    Retry["Show connection error and Retry action"]
+  end
+
+  subgraph Backend["Go backend - one stateless service"]
+    Handler["Connect Go handler - enforce RPC message size limit"]
+    Validate["Validate CSV structure, UTF-8, row limits, IDs, ZAR and values"]
+    Valid{"Entire file valid?"}
+    Issues["Build validation failure with row, field and message"]
+    Calculate["Sum market values in integer cents"]
+    Compare["Check each holding against the limit using exact integer arithmetic"]
+    Analysis["Build analysis with rounded display percentages"]
+    Response["Protobuf response: validation failure OR analysis"]
+  end
+
+  User --> Inputs --> InputOK
+  InputOK -->|No| InputError
+  InputError -->|Correct inputs| Inputs
+  InputOK -->|Yes| Client
+  Client -->|gRPC-Web request| Handler
+  Handler -->|Accepted message| Validate --> Valid
+  Valid -->|No| Issues --> Response
+  Valid -->|Yes| Calculate --> Compare --> Analysis --> Response
+  Response -->|gRPC-Web response| Current
+  Current -->|No| Ignore
+  Current -->|Yes| Outcome
+  Outcome -->|Validation failure| Errors
+  Outcome -->|Analysis| Dashboard
+  Client -->|Network or protocol failure| Retry
+  Retry -->|Retry with current inputs| Inputs
+
+  classDef action fill:#edf4e7,stroke:#79996c,color:#233b32
+  classDef warning fill:#fff2df,stroke:#b58348,color:#714a21
+  class Inputs,Client,Validate,Calculate,Compare,Analysis,Dashboard action
+  class InputError,Issues,Errors,Retry warning
+```
+
+If the user changes an input while a check is running, the browser cancels that request and ignores any late response. If a result is already displayed, it is marked outdated until the user runs another check. Files are processed in memory for each request; there is no database.
+
+### How the components connect
 
 ```mermaid
 flowchart LR
-  CSV[CSV file] --> Vue[Vue + TypeScript]
-  Vue -->|gRPC-Web / Protobuf| RPC[Connect Go handler]
-  RPC --> Domain[CSV validation + exact portfolio calculations]
-  Domain -->|analysis OR issues| RPC
-  RPC --> Vue
-  Proto[portfolio.proto] -. generates .-> Vue
-  Proto -. generates .-> RPC
+  Schema["portfolio.proto - shared API contract"]
+  Schema -.->|Code generation| TS["Generated TypeScript messages and client service definition"]
+  Schema -.->|Code generation| Go["Generated Go messages and service handler"]
+  UI["Vue interface"] --> TS
+  TS -->|gRPC-Web| Go
+  Go --> Adapter["RPC adapter - internal/rpc"]
+  Adapter --> Domain["Validation and calculations - internal/portfolio"]
+  Native["Native gRPC clients"] -->|gRPC| Go
 ```
 
 `proto/portfolio/v1/portfolio.proto` is the shared contract. The response has a Protobuf `oneof`: validation failure or portfolio analysis. Generated clients and handlers perform serialization. Connect is the library; **the browser explicitly uses the gRPC-Web wire protocol**, and the same backend also serves native gRPC. This is verified with actual protocol integration tests, not a JSON substitute. No separate Envoy process is required.
@@ -109,3 +177,4 @@ This version has no authentication, persistence, real feeds, FX conversion, reba
 GCP deployment is **not performed**. Docker and gcloud were not available on the development PATH. See [the deployment notes](docs/deployment.md) for the remaining work. No cloud resources or paid services have been created.
 
 Read [the interview guide](docs/interview-guide.md) to connect the design to Angular, React, C# and Java experience. This is an AI-assisted portfolio project; describe your contribution and understanding accurately.
+

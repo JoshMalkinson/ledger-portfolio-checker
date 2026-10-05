@@ -31,6 +31,7 @@ The development launcher was inspected, but its process cleanup was not exercise
 
 ## Delivery boundaries
 
-The app is local, with no remote repository, public URL, authentication or GCP deployment. No cloud resources or paid services were created. The Git branch is preserved as the project deliverable; there is no pre-existing base branch to merge into. The independent reviewer intentionally did not assess cloud runtime behaviour or excluded features such as authentication, persistence, regulatory rules and FX conversion. Those boundaries are consistent with the approved design; applying this demo to production would require a separate design and review.
+The source repository is public at https://github.com/JoshMalkinson/ledger-portfolio-checker (published October 5, 2026). The running app remains local, without a public application URL, authentication or GCP deployment. No cloud resources or paid services were created. The Git branch is preserved as the project deliverable; there is no pre-existing base branch to merge into. The independent reviewer intentionally did not assess cloud runtime behaviour or excluded features such as authentication, persistence, regulatory rules and FX conversion. Those boundaries are consistent with the approved design; applying this demo to production would require a separate design and review.
 
 The independent reviewer did not rerun the suites; execution evidence above comes from the implementation session. The review separately inspected the code, contracts, scripts and tests.
+
