@@ -169,11 +169,3 @@ npm run e2e
 Browser tests use the installed Microsoft Edge in headless mode. They cover real upload-to-response behaviour, gRPC-Web content type, equality at the threshold, validation errors and a 390px mobile layout. Unit tests cover request cancellation, stale data, retry, loading and literal rendering of uploaded markup. Go tests cover exact arithmetic, upper bounds, malformed data, physical row numbers, native gRPC and gRPC-Web.
 
 Versions are pinned in `go.mod`, `web/package.json` and `web/package-lock.json`. TypeScript is intentionally pinned to 5.9.3 because the installed Vue type checker expects its compiler entry point. Test execution uses one worker for predictable resource use on this machine.
-
-## Scope and deployment
-
-This version has no authentication, persistence, real feeds, FX conversion, rebalancing, LLM matching, or regulatory reporting. It is bound to localhost by default. Only fictional data belongs in the demo. Fonts are fetched from Google Fonts when available; system fallback fonts keep it usable offline after setup.
-
-GCP deployment is **not performed**. Docker and gcloud were not available on the development PATH. See [the deployment notes](docs/deployment.md) for the remaining work. No cloud resources or paid services have been created.
-
-Read [the interview guide](docs/interview-guide.md) to connect the design to Angular, React, C# and Java experience. This is an AI-assisted portfolio project; describe your contribution and understanding accurately.
